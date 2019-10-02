@@ -1,3 +1,5 @@
+//A01227885
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,14 +11,15 @@ static char daytab[2][13] = {
 
 /* month_day function's prototype (given)*/
 void month_day(int year, int yearday, int *pmonth, int *pday) {
-  int leap;
+  int leap, i;
   leap = year%4 == 0 && year%100 != 0 || year%400 == 0;
-  for (int i = 1; yearday > daytab[leap][i]; i++)
+  for ( i= 1; yearday > daytab[leap][i]; i++)
     yearday -= daytab[leap][i];
     *pmonth = i;
     *pday = yearday;
 }
 
+//a list of the names
 char *moth_name(int n) {
   static char *name[] = {
     "Invalid", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"
@@ -38,3 +41,5 @@ int main(int argc, char **argv) {
   printf("%s %d, %d \n", mon, day, year);
   return 0;
 }
+
+
