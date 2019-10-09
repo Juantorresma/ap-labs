@@ -41,10 +41,10 @@ func scanDir(dir string) error {
 	fmt.Println("| Path                    |", dir, "|")
 	fmt.Println("+-------------------------+------+")
 	fmt.Println("| Directories             | ", directories, " |")
-	fmt.Println("| Symbolic Links          | ", symLinks, " |")
-	fmt.Println("| Devices                 | ", devices, " |")
-	fmt.Println("| Sockets                 | ", sockets, " |")
-	fmt.Println("| Other files             | ", other, " |")
+	fmt.Println("| Symbolic Links          | ", symbolicLinks, "  |")
+	fmt.Println("| Devices                 | ", devices, "  |")
+	fmt.Println("| Sockets                 | ", sockets, "  |")
+	fmt.Println("| Other files             | ", otherFiles, "  |")
 	fmt.Println("+-------------------------+------+")
 	return err
 }
