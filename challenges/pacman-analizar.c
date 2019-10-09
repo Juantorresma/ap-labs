@@ -83,7 +83,154 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-//here we start to define all of our functions
+
+bool action(char c1, char c2)
+{
+	if (c1 == 'i' || c1 == 'u')
+	{
+		return true;
+	}
+	else if (c1 == 'r' && c2 == 'e')
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void addinghash(struct Hashtable *ht, struct Package *p)
+{
+	for (int i = 0; i < ht->nelements + 1; i++)
+	{
+		int hashValue = hashcode(p->nam) + i;
+		int index = hashValue % ht->size;
+		if (strcmp(ht->array[index].nam, "") == 0)
+		{
+			ht->array[index] = *p;
+			break;
+		}
+	}
+	ht->nelements += 1;
+}
+
+int hashcode(char s[])
+{
+	int n = strlen(s);
+	int hashValue = 0;
+
+	for (int i = 0; i < n; i++)
+	{
+		hashValue = hashValue * 31 + s[i];
+	}
+
+	hashValue = hashValue & 0x7fffffff;
+	return hashValue;
+}
+
+bool findhash(struct Hashtable *ht, char key[])
+{
+	for (int i = 0; i < ht->nelements + 1; i++)
+	{
+		int hashValue = hashcode(key) + i;
+		int index = hashValue % ht->size;
+		if (strcmp(ht->array[index].nam, key) == 0)
+		{
+			return true;
+		}
+		else if (strcmp(ht->array[index].nam, "") == 0)
+		{
+			return false;
+		}
+	}
+	return false;
+}
+
+struct Package *get(struct Hashtable *ht, char key[])
+{
+	for (int i = 0; i < ht->nelements + 1; i++)
+	{
+		int hashValue = hashcode(key) + i;
+		int index = hashValue % ht->size;
+		if (strcmp(ht->array[index].nam, key) == 0)
+		{
+			return &ht->array[index];
+		}
+		else if (strcmp(ht->array[index].nam, "") == 0)
+		{
+			return NULL;
+		}
+	}
+	return NULL;
+}
+
+void printhash(struct Hashtable *ht)
+{
+	printf("ht.size: %d\n", ht->size);
+	printf("ht.nelements: %d\n", ht->nelements);
+	printf("ht.array: \n");
+	for (int i = 0; i < ht->size; i++)
+	{
+		if (strcmp(ht->array[i].nam, "") != 0)
+		{
+			printpck(&ht->array[i]);
+			printf("\n");
+		}
+	}
+}
+
+void newtostring(char string[], struct Hashtable *ht)
+{
+	for (int i = 0; i < ht->size; i++)
+	{
+		if (strcmp(ht->array[i].nam, "") != 0)
+		{
+			stringpck(string, &ht->array[i]);
+			strcat(string, "\n\n");
+		}
+	}
+}
+
+void printpck(struct Package *p)
+{
+	printf("- Package name        : %s\n", p->nam);
+	printf("  - Install date      : %s\n", p->dat);
+	printf("  - Last update date  : %s\n", p->upt);
+	printf("  - How many update  : %d\n", p->upd);
+	printf("  - Removal date      : %s\n", p->rdt);
+}
+
+void stringpck(char string[], struct Package *p)
+{
+	strcat(string, "- Package name        : ");
+	strcat(string, p->nam);
+	strcat(string, "\n");
+	strcat(string, "  - Install date      : ");
+	strcat(string, p->dat);
+	strcat(string, "\n");
+	strcat(string, "  - Last update date  : ");
+	strcat(string, p->upt);
+	strcat(string, "\n");
+	strcat(string, "  - How many updates  : ");
+	char numBuf[20];
+	sprintf(numBuf, "%d\n", p->upd);
+	strcat(string, numBuf);
+	strcat(string, "  - Removal date      : ");
+	strcat(string, p->rdt);
+}
+
+void mkerep(char *reportS, int iPackages, int rPackages, int uPackages, int cInstalled, struct Hashtable *ht)
+{
+	strcat(reportS, "Pacman Packages Report\n");
+	strcat(reportS, "----------------------\n");
+	char numBuf[120];
+	sprintf(numBuf, "- Installed packages : %d\n- Removed packages   : %d\n- Upgraded packages  : %d\n- Current installed  : %d\n\n", iPackages, rPackages, uPackages, cInstalled);
+	strcat(reportS, numBuf);
+	newtostring(reportS, ht);
+}
+
+//here we call to define all of our functions
 void analize(char *logFile, char *report)
 {
 	printf("Generating Report from: [%s] log file\n", logFile);
@@ -110,8 +257,8 @@ void analize(char *logFile, char *report)
 	}
 	char buf[size];
 	read(fd, buf, size);
-	close(fd);
-	buf[size - 1] = '\0';
+	close(fd)
+		buf[size - 1] = '\0';
 
 	int i = 0;
 	int j = 0;
@@ -267,150 +414,4 @@ void analize(char *logFile, char *report)
 	close(fd);
 
 	printf("Report is generated at: [%s]\n", report);
-}
-
-bool action(char c1, char c2)
-{
-	if (c1 == 'i' || c1 == 'u')
-	{
-		return true;
-	}
-	else if (c1 == 'r' && c2 == 'e')
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-void addinghash(struct Hashtable *ht, struct Package *p)
-{
-	for (int i = 0; i < ht->nelements + 1; i++)
-	{
-		int hashValue = hashcode(p->nam) + i;
-		int index = hashValue % ht->size;
-		if (strcmp(ht->array[index].nam, "") == 0)
-		{
-			ht->array[index] = *p;
-			break;
-		}
-	}
-	ht->nelements += 1;
-}
-
-int hashcode(char s[])
-{
-	int n = strlen(s);
-	int hashValue = 0;
-
-	for (int i = 0; i < n; i++)
-	{
-		hashValue = hashValue * 31 + s[i];
-	}
-
-	hashValue = hashValue & 0x7fffffff;
-	return hashValue;
-}
-
-bool findhash(struct Hashtable *ht, char key[])
-{
-	for (int i = 0; i < ht->nelements + 1; i++)
-	{
-		int hashValue = hashcode(key) + i;
-		int index = hashValue % ht->size;
-		if (strcmp(ht->array[index].nam, key) == 0)
-		{
-			return true;
-		}
-		else if (strcmp(ht->array[index].nam, "") == 0)
-		{
-			return false;
-		}
-	}
-	return false;
-}
-
-struct Package *get(struct Hashtable *ht, char key[])
-{
-	for (int i = 0; i < ht->nelements + 1; i++)
-	{
-		int hashValue = hashcode(key) + i;
-		int index = hashValue % ht->size;
-		if (strcmp(ht->array[index].nam, key) == 0)
-		{
-			return &ht->array[index];
-		}
-		else if (strcmp(ht->array[index].nam, "") == 0)
-		{
-			return NULL;
-		}
-	}
-	return NULL;
-}
-
-void printhash(struct Hashtable *ht)
-{
-	printf("ht.size: %d\n", ht->size);
-	printf("ht.nelements: %d\n", ht->nelements);
-	printf("ht.array: \n");
-	for (int i = 0; i < ht->size; i++)
-	{
-		if (strcmp(ht->array[i].nam, "") != 0)
-		{
-			printpck(&ht->array[i]);
-			printf("\n");
-		}
-	}
-}
-
-void newtostring(char string[], struct Hashtable *ht)
-{
-	for (int i = 0; i < ht->size; i++)
-	{
-		if (strcmp(ht->array[i].nam, "") != 0)
-		{
-			stringpck(string, &ht->array[i]);
-			strcat(string, "\n\n");
-		}
-	}
-}
-
-void printpck(struct Package *p)
-{
-	printf("- Package name        : %s\n", p->nam);
-	printf("  - Install date      : %s\n", p->dat);
-	printf("  - Last update date  : %s\n", p->upt);
-	printf("  - How many update  : %d\n", p->upd);
-	printf("  - Removal date      : %s\n", p->rdt);
-}
-
-void stringpck(char string[], struct Package *p)
-{
-	strcat(string, "- Package name        : ");
-	strcat(string, p->nam);
-	strcat(string, "\n");
-	strcat(string, "  - Install date      : ");
-	strcat(string, p->dat);
-	strcat(string, "\n");
-	strcat(string, "  - Last update date  : ");
-	strcat(string, p->upt);
-	strcat(string, "\n");
-	strcat(string, "  - How many updates  : ");
-	char numBuf[20];
-	sprintf(numBuf, "%d\n", p->upd);
-	strcat(string, numBuf);
-	strcat(string, "  - Removal date      : ");
-	strcat(string, p->rdt);
-}
-
-void mkerep(char *reportS, int iPackages, int rPackages, int uPackages, int cInstalled, struct Hashtable *ht)
-{
-	strcat(reportS, "Pacman Packages Report\n");
-	strcat(reportS, "----------------------\n");
-	char numBuf[120];
-	sprintf(numBuf, "- Installed packages : %d\n- Removed packages   : %d\n- Upgraded packages  : %d\n- Current installed  : %d\n\n", iPackages, rPackages, uPackages, cInstalled);
-	strcat(reportS, numBuf);
-	newtostring(reportS, ht);
 }
