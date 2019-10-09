@@ -355,7 +355,7 @@ void analize(char *logFile, char *report)
 				else
 				{
 					struct Package *p1 = get(&ht, nam);
-					if (strcmp(action, "installed") == 0)
+					if (strcmp(actions, "installed") == 0)
 					{
 						if (p1->stat == removed)
 						{
@@ -364,7 +364,7 @@ void analize(char *logFile, char *report)
 							rPackages--;
 						}
 					}
-					else if (strcmp(action, "removed") == 0)
+					else if (strcmp(actions, "removed") == 0)
 					{
 						if (p1->stat == installed || p1->stat == upgraded)
 						{
@@ -375,7 +375,7 @@ void analize(char *logFile, char *report)
 							rPackages++;
 						}
 					}
-					else if (strcmp(action, "upgraded") == 0)
+					else if (strcmp(actions, "upgraded") == 0)
 					{
 						if (p1->stat == installed)
 						{
