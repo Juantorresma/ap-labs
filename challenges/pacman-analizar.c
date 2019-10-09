@@ -257,7 +257,7 @@ void analize(char *logFile, char *report)
 	}
 	char buf[size];
 	read(fd, buf, size);
-	close(fd)
+	close(fd);
 		buf[size - 1] = '\0';
 
 	int i = 0;
@@ -265,7 +265,7 @@ void analize(char *logFile, char *report)
 	int state = date;
 	char dates[17];
 	char nam[50];
-	char action[10];
+	char actions[10];
 	bool validLine = false;
 	while (i < size)
 	{
@@ -308,11 +308,11 @@ void analize(char *logFile, char *report)
 				validLine = true;
 				while (buf[i] != ' ')
 				{
-					action[j] = buf[i];
+					actions[j] = buf[i];
 					i++;
 					j++;
 				}
-				action[j] = '\0';
+				actions[j] = '\0';
 				i++;
 				state = fetch_name;
 			}
