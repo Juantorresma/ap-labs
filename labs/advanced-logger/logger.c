@@ -1,26 +1,3 @@
-#include <stdio.h>
-#include "logger.h"
-
-int initLogger(char *logType) {
-    printf("Initializing Logger on: %s\n", logType);
-    return 0;
-}
-
-int infof(const char *format, ...) {
-    return 0;
-}
-
-int warnf(const char *format, ...) {
-    return 0;
-}
-
-int errorf(const char *format, ...) {
-    return 0;
-}
-int panicf(const char *format, ...) {
-    return 0;
-}
-
 
 //My logger a01227885
 
@@ -28,9 +5,13 @@ int panicf(const char *format, ...) {
 #include <stdarg.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <sys/types.h> 
-#include <unistd.h> 
-#include "logger.h"
+#include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <syslog.h>
 
 //Types of actions
 
