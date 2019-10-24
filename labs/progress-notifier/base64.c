@@ -16,7 +16,7 @@
 #define EQUALS     65
 #define INVALID    66
 
-
+//here i start to put the ascii values to certain characters definded bedore
 static const unsigned char d[] = {
     66,66,66,66,66,66,66,66,66,66,64,66,66,66,66,66,66,66,66,66,66,66,66,66,66,
     66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,62,66,66,66,63,52,53,
@@ -34,6 +34,7 @@ static const unsigned char d[] = {
 size_t progress;
 off_t size;
 
+//encoder
 int base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize)
 {
    const char base64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -60,9 +61,9 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
       n2 = (uint8_t)(n >> 6) & 63;
       n3 = (uint8_t)n & 63;
 
-      if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+      if(resultIndex >= resultSize) return 1;  
       result[resultIndex++] = base64chars[n0];
-      if(resultIndex >= resultSize) return 1;   /* indicate failure: buffer too small */
+      if(resultIndex >= resultSize) return 1;   
       result[resultIndex++] = base64chars[n1];
       if((x+1) < dataLength)
       {
@@ -88,6 +89,7 @@ int base64encode(const void* data_buf, size_t dataLength, char* result, size_t r
    return 0;  
 }
 
+//decoder
 int base64decode (char *in, size_t inLen, unsigned char *out, size_t *outLen) { 
     char *end = in + inLen;
     char iter = 0;
@@ -99,15 +101,14 @@ int base64decode (char *in, size_t inLen, unsigned char *out, size_t *outLen) {
         unsigned char c = d[*in++];
         
         switch (c) {
-        case WHITESPACE: continue;   /* skip whitespace */
-        case INVALID:    return 1;   /* invalid input, return error */
-        case EQUALS:                 /* pad character, end of data */
+        case WHITESPACE: continue;  
+        case INVALID:    return 1;  
+        case EQUALS:                 
             in = end;
             continue;
         default:
             buf = buf << 6 | c;
-            iter++; // increment the number of iteration
-            /* If the buffer is full, split it into bytes */
+            iter++;
             if (iter == 4) {
                 if ((len += 3) > *outLen) return 1; /* buffer overflow */
                 *(out++) = (buf >> 16) & 255;
@@ -129,15 +130,18 @@ int base64decode (char *in, size_t inLen, unsigned char *out, size_t *outLen) {
         *(out++) = (buf >> 4) & 255;
     }
 
-    *outLen = len; /* modify to reflect the actual output size */
+    *outLen = len; 
     return 0;
 }
 
+
+//open the file
 int openFile(char* filename){
     int fd = open(filename, O_RDONLY);
     return fd;
 }
 
+//to get the size
 off_t getSize(int fd){
     off_t curOffset = lseek(fd, (size_t)0, SEEK_CUR);
     off_t size = lseek(fd, (size_t)0, SEEK_END); 
@@ -145,13 +149,14 @@ off_t getSize(int fd){
     return size;
 }
 
-static void
-sigHandler(int sig)
+
+//handle the signals
+static void sigHandler(int sig)
 {
     infof("Archivo procesado: %lf\n", 100.0f*progress/size);
 }
 
-
+//main function
 int main(char argc, char** argv){
     int fd = openFile(argv[2]);
     if(fd == -1){
