@@ -15,7 +15,7 @@ typedef struct node {
 	char *name;
 	char *state;
 	int memory;
-	int num_threads;
+	int threads;
 	int open_files;
 	struct node * next;
 } node_t;
@@ -35,7 +35,7 @@ void refresh(node_t * head){
 
 
 //My put function to put the information in
-void put(int pid, int ppid, char *name, char *state, int memory, int num_threads, int open_files) {
+void put(int pid, int ppid, char *name, char *state, int memory, int threads, int open_files) {
 	node_t * current = head;
 	node_t * parent = NULL;
 	int new_head = 1;
@@ -51,7 +51,7 @@ void put(int pid, int ppid, char *name, char *state, int memory, int num_threads
 	current->name = name;
 	current->state = state;
 	current->memory = memory;
-	current->num_threads = num_threads;
+	current->threads = threads;
 	current->open_files = open_files;
     current->next = tmp;
 	if(new_head){
@@ -89,7 +89,7 @@ int proc(){
 				char *name;
 				char *state;
 				int memory;
-				int num_threads;
+				int threads;
 				int open_files;
 				char *substr;
 				char *p;
@@ -140,7 +140,7 @@ int proc(){
 					substr = " # Threads:\t";
 					p = strstr(line, substr);
 					if(p == line) {
-						num_threads = atoi((p+9));
+						threads = atoi((p+9));
 					}
 
 				}
@@ -164,7 +164,7 @@ int proc(){
 				}
 				closedir(procfd);
 
-				put(pid, ppid, name, state, memory, num_threads, open_files);
+				put(pid, ppid, name, state, memory, threads, open_files);
 
 				free(fdpath);
 				if (line)
@@ -202,7 +202,7 @@ void print_node(node_t *current){
 	printf("| %36s ", current->name);
 	printf("| %8s ", current->state);
 	printf("| %7dM ", current->memory);
-	printf("| %9d ", current->num_threads);
+	printf("| %9d ", current->threads);
 	printf("| %10d |\n", current->open_files);
 }
 
