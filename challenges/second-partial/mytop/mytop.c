@@ -179,7 +179,9 @@ int proc(){
 
 //The clear function
 void clear() {
-	printf("\e[1;1H\e[2J"); 
+	for(int i = 0; i < 22; i++)
+    	printf("\033[A\r");
+
 }
 
 //Here i print the headers
