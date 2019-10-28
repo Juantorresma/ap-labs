@@ -16,7 +16,7 @@ typedef struct node {
 	char *state;
 	int memory;
 	int threads;
-	int open_files;
+	int files;
 	struct node * next;
 } node_t;
 //The nodes i will be using, start my head in null
@@ -35,7 +35,7 @@ void refresh(node_t * head){
 
 
 //My put function to put the information in
-void put(int pid, int ppid, char *name, char *state, int memory, int threads, int open_files) {
+void put(int pid, int ppid, char *name, char *state, int memory, int threads, int files) {
 	node_t * current = head;
 	node_t * parent = NULL;
 	int new_head = 1;
@@ -52,7 +52,7 @@ void put(int pid, int ppid, char *name, char *state, int memory, int threads, in
 	current->state = state;
 	current->memory = memory;
 	current->threads = threads;
-	current->open_files = open_files;
+	current->files = files;
     current->next = tmp;
 	if(new_head){
 		head = current;
@@ -90,7 +90,7 @@ int proc(){
 				char *state;
 				int memory;
 				int threads;
-				int open_files;
+				int files;
 				char *substr;
 				char *p;
 				while ((read = getline(&line, &len, fp)) != -1) {
@@ -136,8 +136,8 @@ int proc(){
 						p[strlen(p) - 3] = '\0';
 						memory = atoi(p)/1024;
 					}
-					// The number of hreads
-					substr = " # Threads:\t";
+					// Threads
+					substr = "Threads:\t";
 					p = strstr(line, substr);
 					if(p == line) {
 						threads = atoi((p+9));
@@ -156,15 +156,15 @@ int proc(){
 				procfd = opendir(fdpath);
 				if (procfd)
 				{
-					open_files = -2;
+					files = -2;
 					while ((fd = readdir(procfd)) != NULL)
 					{
-						open_files++;
+						files++;
 					}
 				}
 				closedir(procfd);
 
-				put(pid, ppid, name, state, memory, threads, open_files);
+				put(pid, ppid, name, state, memory, threads, files);
 
 				free(fdpath);
 				if (line)
@@ -203,7 +203,7 @@ void print_node(node_t *current){
 	printf("| %8s ", current->state);
 	printf("| %7dM ", current->memory);
 	printf("| %9d ", current->threads);
-	printf("| %10d |\n", current->open_files);
+	printf("| %10d |\n", current->files);
 }
 
 //here i put together my printt funcions
