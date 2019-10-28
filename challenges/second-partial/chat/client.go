@@ -1,11 +1,7 @@
-// Copyright © 2016 Alan A. A. Donovan & Brian W. Kernighan.
-// License: https://creativecommons.org/licenses/by-nc-sa/4.0/
-
-// See page 227.
-
-// Netcat is a simple read/write client for TCP servers.
+// A01227885 my modification for client
 package main
 
+//al the imports needed
 import (
 	"io"
 	"log"
@@ -13,9 +9,34 @@ import (
 	"os"
 )
 
-//!+
+//mmy main where i will do everything
 func main() {
-	conn, err := net.Dial("tcp", "localhost:8000")
+	
+	//firts i set my  string variables
+	var svr, user string
+	//then two booleands for my flags
+	var svr_flag, user_flag bool
+	for _, s := range os.Args {
+	    if s == "-user" {
+	        user_flag=true
+			continue
+	    }else if user_flag{
+			user_flag= false
+			user = s
+	    }if s == "-server" {
+		    	svr_flag=true
+			continue
+	    }else if svr_flag{
+			svr_flag= false
+			svr = s
+		}
+	}
+	//check if they are not blanc
+	if svr == "" || user == ""{
+		log.Fatal("There is no server or user")
+	}
+
+	conn, err := net.Dial("tcp", svr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,6 +46,11 @@ func main() {
 		log.Println("done")
 		done <- struct{}{} // signal the main goroutine
 	}()
+	_, erro := conn.Write([]byte(user))
+	if erro != nil {
+		log.Fatal(erro)
+	}
+
 	mustCopy(conn, os.Stdin)
 	conn.Close()
 	<-done // wait for background goroutine to finish
