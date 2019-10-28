@@ -11,6 +11,13 @@
 #define EVENT_SIZE (sizeof(struct inotify_event))
 #define EVENT_BUF_LEN (1024*(EVENT_SIZE + 16))
 
+
+
+void clear() {
+	printf("\e[1;1H\e[2J");
+}
+
+
 void checkChanges(){
 	int fd;
         int wd;
@@ -193,10 +200,6 @@ void getProcesses() {
 		}
 
 	}
-}
-
-void clear() {
-	printf("\e[1;1H\e[2J");
 }
 
 int main(){
