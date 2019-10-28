@@ -15,8 +15,8 @@ typedef struct node {
 	char *name;
 	char *state;
 	int memory;
-	int threads;
-	int files;
+	int num_threads;
+	int open_files;
 	struct node * next;
 } node_t;
 //The nodes i will be using, start my head in null
@@ -35,7 +35,7 @@ void refresh(node_t * head){
 
 
 //My put function to put the information in
-void put(int pid, int ppid, char *name, char *state, int memory, int threads, int files) {
+void put(int pid, int ppid, char *name, char *state, int memory, int num_threads, int files) {
 	node_t * current = head;
 	node_t * parent = NULL;
 	int new_head = 1;
@@ -51,7 +51,7 @@ void put(int pid, int ppid, char *name, char *state, int memory, int threads, in
 	current->name = name;
 	current->state = state;
 	current->memory = memory;
-	current->threads = threads;
+	current->num_threads = num_threads;
 	current->files = files;
     current->next = tmp;
 	if(new_head){
@@ -89,7 +89,7 @@ int proc(){
 				char *name;
 				char *state;
 				int memory;
-				int threads;
+				int num_threads;
 				int files;
 				char *substr;
 				char *p;
@@ -136,11 +136,11 @@ int proc(){
 						p[strlen(p) - 3] = '\0';
 						memory = atoi(p)/1024;
 					}
-					// Threads
-					substr = "Threads:\t";
+					// The number of hreads
+					substr = " # Threads:\t";
 					p = strstr(line, substr);
 					if(p == line) {
-						threads = atoi((p+9));
+						num_threads = atoi((p+9));
 					}
 
 				}
@@ -164,7 +164,7 @@ int proc(){
 				}
 				closedir(procfd);
 
-				put(pid, ppid, name, state, memory, threads, files);
+				put(pid, ppid, name, state, memory, num_threads, files);
 
 				free(fdpath);
 				if (line)
@@ -202,7 +202,7 @@ void print_node(node_t *current){
 	printf("| %36s ", current->name);
 	printf("| %8s ", current->state);
 	printf("| %7dM ", current->memory);
-	printf("| %9d ", current->threads);
+	printf("| %9d ", current->num_threads);
 	printf("| %10d |\n", current->files);
 }
 
