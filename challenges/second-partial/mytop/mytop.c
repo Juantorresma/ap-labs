@@ -225,7 +225,6 @@ void print(){
 int main(){
 	while(1){
 		int out = proc();
-		clear();
 		if(out!=0){
 			return -1;
 		}
