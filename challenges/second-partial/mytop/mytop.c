@@ -35,7 +35,7 @@ void refresh(node_t * head){
 
 
 //My put function to put the information in
-void put(int pid, int ppid, char *name, char *state, int memory, int num_threads, int files) {
+void put(int pid, int ppid, char *name, char *state, int memory, int num_threads, int open_files) {
 	node_t * current = head;
 	node_t * parent = NULL;
 	int new_head = 1;
@@ -52,7 +52,7 @@ void put(int pid, int ppid, char *name, char *state, int memory, int num_threads
 	current->state = state;
 	current->memory = memory;
 	current->num_threads = num_threads;
-	current->files = files;
+	current->open_files = open_files;
     current->next = tmp;
 	if(new_head){
 		head = current;
@@ -90,7 +90,7 @@ int proc(){
 				char *state;
 				int memory;
 				int num_threads;
-				int files;
+				int open_files;
 				char *substr;
 				char *p;
 				while ((read = getline(&line, &len, fp)) != -1) {
@@ -156,15 +156,15 @@ int proc(){
 				procfd = opendir(fdpath);
 				if (procfd)
 				{
-					files = -2;
+					open_files = -2;
 					while ((fd = readdir(procfd)) != NULL)
 					{
-						files++;
+						open_files++;
 					}
 				}
 				closedir(procfd);
 
-				put(pid, ppid, name, state, memory, num_threads, files);
+				put(pid, ppid, name, state, memory, num_threads, open_files);
 
 				free(fdpath);
 				if (line)
@@ -203,7 +203,7 @@ void print_node(node_t *current){
 	printf("| %8s ", current->state);
 	printf("| %7dM ", current->memory);
 	printf("| %9d ", current->num_threads);
-	printf("| %10d |\n", current->files);
+	printf("| %10d |\n", current->open_files);
 }
 
 //here i put together my printt funcions
