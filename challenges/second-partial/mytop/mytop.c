@@ -1,3 +1,5 @@
+//My program A01227885 mytop Second partial
+
 #include <stdio.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -5,25 +7,40 @@
 #include <string.h>
 #include <stdlib.h>
 
+//Here i define my struct which i will use in my program
+
 typedef struct node {
-    int pid;
+	int pid;
 	int ppid;
 	char *name;
 	char *state;
 	int memory;
 	int threads;
 	int files;
-    struct node * next;
+	struct node * next;
 } node_t;
-
+//The nodes i will be using, start my head in null
 node_t * head = NULL;
 
-void push(int pid, int ppid, char *name, char *state, int memory, int threads, int files) {
+//my refresh funtion to refresh the head
+void refresh(node_t * head){
+	node_t * current = head;
+	node_t * tmp;
+    while (current != NULL) {
+		tmp = current->next;
+		free(current);
+        current = tmp;
+    }
+}
+
+
+//My put function to put the information in
+void put(int pid, int ppid, char *name, char *state, int memory, int threads, int files) {
 	node_t * current = head;
 	node_t * parent = NULL;
-	int newHead = 1;
+	int new_head = 1;
     while (current != NULL && current->memory > memory) {
-		newHead = 0;
+		new_head = 0;
 		parent = current;
         current = current->next;
     }
@@ -37,23 +54,15 @@ void push(int pid, int ppid, char *name, char *state, int memory, int threads, i
 	current->threads = threads;
 	current->files = files;
     current->next = tmp;
-	if(newHead){
+	if(new_head){
 		head = current;
 	}else{
 		parent->next = current;
 	}
 }
-void clean(node_t * head){
-	node_t * current = head;
-	node_t * tmp;
-    while (current != NULL) {
-		tmp = current->next;
-		free(current);
-        current = tmp;
-    }
-}
 
-int process_list(){
+//My proc function here is the magic
+int proc(){
 	head = NULL;
 	DIR *d;
 	struct dirent *dir;
@@ -155,7 +164,7 @@ int process_list(){
 				}
 				closedir(procfd);
 
-				push(pid, ppid, name, state, memory, threads, files);
+				put(pid, ppid, name, state, memory, threads, files);
 
 				free(fdpath);
 				if (line)
@@ -168,12 +177,13 @@ int process_list(){
 }
 
 
-
+//clear the screen, i had to modify it
 void clear() {
 	for(int i = 0; i < 22; i++)
     	printf("\033[A\r");
 }
 
+//the ptinting i divided so the header would only print once
 void print_header(){
 	printf("| %7s ", "PID");
 	printf("| %7s ", "Parent");
@@ -185,6 +195,7 @@ void print_header(){
 	printf("|---------|---------|--------------------------------------|----------|----------|-----------|------------|\n");
 }
 
+//then every node
 void print_node(node_t *current){
 	printf("| %7d ", current->pid);
 	printf("| %7d ", current->ppid);
@@ -195,6 +206,7 @@ void print_node(node_t *current){
 	printf("| %10d |\n", current->files);
 }
 
+//here i put together my printt funcions
 void print(){
 	print_header();
   	node_t * current = head;
@@ -204,14 +216,15 @@ void print(){
 	    print_node(current);
 	    current = current->next;
 	}
-	clean(head);
+	refresh(head);
 	sleep(2);
 	clear();
 }
 
+//infinite loop to call my process
 int main(){
 	while(1){
-		int out = process_list();
+		int out = proc();
 		if(out!=0){
 			return -1;
 		}
