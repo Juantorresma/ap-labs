@@ -17,35 +17,6 @@ void clear() {
 	printf("\e[1;1H\e[2J");
 }
 
-
-void checkChanges(){
-	int fd;
-        int wd;
-        int rd;
-        int p = 0;
-        struct inotify_event *event;
-        char buffer[EVENT_BUF_LEN];
-        fd = inotify_init();
-        if(fd<0)
-                printf("inotify error\n");
-        wd = inotify_add_watch(fd, "/proc", IN_CREATE | IN_DELETE);
-        while(1) {
-                rd = read(fd, buffer, EVENT_BUF_LEN);
-                if(read < 0)
-                        printf("event not read\n");
-                while(p < rd) {
-                        event = (struct inotify_event * ) &buffer[p];
-                        if(event->len) {
-                                clear();
-                                getProcesses();
-                                p += EVENT_SIZE + event->len;
-                        }
-                }
-        }
-        inotify_rm_watch(fd, wd);
-        close(fd);
-}
-
 void getProcesses() {
 	char procContent[200][15];
 	int lenAll = 0;
@@ -201,6 +172,36 @@ void getProcesses() {
 
 	}
 }
+
+
+void checkChanges(){
+	int fd;
+        int wd;
+        int rd;
+        int p = 0;
+        struct inotify_event *event;
+        char buffer[EVENT_BUF_LEN];
+        fd = inotify_init();
+        if(fd<0)
+                printf("inotify error\n");
+        wd = inotify_add_watch(fd, "/proc", IN_CREATE | IN_DELETE);
+        while(1) {
+                rd = read(fd, buffer, EVENT_BUF_LEN);
+                if(read < 0)
+                        printf("event not read\n");
+                while(p < rd) {
+                        event = (struct inotify_event * ) &buffer[p];
+                        if(event->len) {
+                                clear();
+                                getProcesses();
+                                p += EVENT_SIZE + event->len;
+                        }
+                }
+        }
+        inotify_rm_watch(fd, wd);
+        close(fd);
+}
+
 
 int main(){
 	clear();
