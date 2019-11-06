@@ -18,4 +18,3 @@ char** argv;
    printf("Initial Length\t: %d\nNew String\t: %s\nSubString was found\t: %s\n", strLen, strAdd, isSubstr); 
    return 0;
 }
-© 2019 GitHub, Inc.
