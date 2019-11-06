@@ -1,7 +1,5 @@
 
-int
-mystrlen (char *str)
-{
+int mystrlen (char *str){
   int n = 0;
   while (str[n] != '\0')
     {
@@ -10,9 +8,7 @@ mystrlen (char *str)
   return n;
 }
 
-char *
-mystradd (char *origin, char *addition)
-{
+char * mystradd (char *origin, char *addition) {
   int lenght = mystrlen (origin);
   int n;
   for (n = 0; addition[n] != '\0'; n++)
@@ -23,9 +19,7 @@ mystradd (char *origin, char *addition)
   return origin;
 }
 
-int
-mystrfind (char *origin, char *substr)
-{
+intmystrfind (char *origin, char *substr) {
   int lenght = mystrlen (origin);
   int sublenght = mystrlen (substr);
   int m = 0;
