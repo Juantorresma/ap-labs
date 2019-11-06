@@ -1,33 +1,21 @@
 #include <stdio.h>
-#include "strlib.c"
 
 int mystrlen(char*);
 char* mystradd(char*, char*);
 int mystrfind(char*, char*);
 
-int main (int argc, char **argv){
-  switch (argc)
-    {
-    case 2:
-      printf ("Initial Length      : %d\n", mystrlen (argv[1]));
-      break;
-    case 3:
-      printf ("Initial Length      : %d\n", mystrlen (argv[1]));
-      printf ("New String          : %s\n", mystradd (argv[1], argv[2]));
-      break;
-    case 4:
-      printf ("Initial Length      : %d\n", mystrlen (argv[1]));
-      printf ("New String          : %s\n", mystradd (argv[1], argv[2]));
-      if (mystrfind (argv[1], argv[3]) == 1)
-	{
-	  printf ("SubString was found : yes\n");
+int main(argc, argv)
+char argc;
+char** argv;
+{
+   if(argc < 4){
+	printf("You need to pass 3 arguments\n");
+	return -1;
 	}
-      else
-	{
-	  printf ("SubString was found : no\n");
-	}
-      break;
-
-    }
-  return 0;
+   int strLen = mystrlen(argv[1]);
+   char* strAdd = mystradd(argv[1],argv[2]);
+   char* isSubstr = mystrfind(strAdd,argv[3]) ? "yes":"no";
+   printf("Initial Length\t: %d\nNew String\t: %s\nSubString was found\t: %s\n", strLen, strAdd, isSubstr); 
+   return 0;
 }
+© 2019 GitHub, Inc.
