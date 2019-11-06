@@ -157,7 +157,7 @@ static void sigHandler(int sig)
 }
 
 //main function
-int main(char argc, char** argv){
+int main(int argc, char** argv){
     int fd = openFile(argv[2]);
     if(fd == -1){
         errorf("Invalid file\n");
