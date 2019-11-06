@@ -35,6 +35,11 @@
 #define CYAN		6
 #define	WHITE		7
 
+//init types
+#define STDOUT 0
+#define SYSLOG 1
+
+//init variable
 int logDest = 0;
 
 //here i initialize 
