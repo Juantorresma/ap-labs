@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "strlib.h"
 
+int mystrlen(char*);
+char* mystradd(char*, char*);
+int mystrfind(char*, char*);
 
 int main (int argc, char **argv){
   switch (argc)
