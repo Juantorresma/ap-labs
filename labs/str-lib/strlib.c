@@ -1,46 +1,37 @@
 
-int mystrlen (char *str){
-  int n = 0;
-  while (str[n] != '\0')
-    {
-      n++;
-    }
-  return n;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int mystrlen(char *str){
+        const char *s;
+        for(s = str; *s; ++s);
+        return (s-str);
 }
 
-char * mystradd (char *origin, char *addition) {
-  int lenght = mystrlen (origin);
-  int n;
-  for (n = 0; addition[n] != '\0'; n++)
-    {
-      origin[lenght + n] = addition[n];
-    }
-  origin[lenght + n] = '\0';
-  return origin;
+char *mystradd(char *origin, char *addition){
+    int originalLength = mystrlen(origin);
+    int additionLength = mystrlen(addition);
+    char* newString = malloc(sizeof(char)*originalLength + additionLength);
+    strcpy(newString, origin);
+    strcpy(newString + originalLength, addition);
+    return newString;
 }
 
-int mystrfind (char *origin, char *substr) {
-  int lenght = mystrlen (origin);
-  int sublenght = mystrlen (substr);
-  int m = 0;
-  for (int n = 0; n <= lenght; n++)
-    {
-      if (origin[n] == substr[0] && m < 1)
-	{
-	  m++;
-	}
-      else if (origin[n] == substr[m])
-	{
-	  m++;
-	}
-      else
-	{
-	  m = 0;
-	}
-      if (n >= sublenght)
-	{
-	  return 1;
-	}
+int mystrfind(char *origin, char *substr){
+    char* a = origin;
+    char* b = substr;
+    while(a < origin + mystrlen(origin)){
+      if(*a == *b){
+        if(b == substr + mystrlen(substr) - 1){
+          return 1;
+        }
+          a+=1;
+          b+=1;
+      }
+      else{
+          a+=1;
+          b = substr;
+      } 
     }
-  return 0;
+    return 0;
 }
