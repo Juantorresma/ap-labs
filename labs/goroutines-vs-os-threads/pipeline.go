@@ -1,8 +1,8 @@
 //pipeline excersice a01227885
-
 package main
 
 import (
+	"flag"
 	"fmt"
 	"time"
 	"os"
@@ -10,31 +10,49 @@ import (
 )
 
 func main() {
-	head := make(chan time.Time)
-	last := head
-    if err != nil {
-        fmt.Println(err)
-        return
-    }
-	for stageCount := 1; ; stageCount++ {
-		go pipeLine(last, stageCount, f)
-		head <- time.Now()
+	pipes := flag.Int("pipes", 1000000, "Num pipes")
+	verbose := flag.Bool("verbose", false, "Printing created pipes")
+	flag.Parse()
+	var start time.Time
+	ch := make(chan struct{})
+	in := ch
+	start = time.Now()
 
-		temp := last
-		last = make(chan time.Time)
-		go connectPipes(temp, last)
+	for i := 1; i <= *pipes; i++ {
+		out := make(chan struct{})
+		go func(in <-chan struct{}, out chan<- struct{}, i int) {
+			out <- <-in
+		}(in, out, i)
+
+		in = out
+		if *verbose {
+			fmt.Printf("\r[%d] ", i)
+		}
 	}
-}
-
-func pipeLine(last chan time.Time, stageCount int, writer *os.File) {
-	startTime := <-last
-	endTime := time.Now()
-	fmt.Printf("Goroutine number: %d\t Time: %v\n", stageCount, endTime.Sub(startTime))
-	writer.WriteString(strconv.Itoa(stageCount)+","+fmt.Sprint(endTime.Sub(startTime))+"\n")
-}
-
-func connectPipes(src, dst chan time.Time) {
-	for t := range src {
-		dst <- t
+	
+	if *verbose {
+		fmt.Println()
 	}
+	
+	fmt.Printf("Goroutines created in %v\n", time.Since(start))
+	start = time.Now()
+	ch <- struct{}{}
+	<-in
+	fmt.Printf("Message transmitted in %v\n", time.Since(start))
+	file, err := os.Create("exercise9-4.txt")
+	
+  if err != nil {
+    fmt.Println(err)
+    return
+  }
+	
+  tme := time.Since(start)
+  str := "Number of goroutines created: "+strconv.Itoa(*pipes)+"\nIt took "+tme.String() " to transmit the message"
+  outFle, err := file.WriteString(str)
+  if err != nil {
+    fmt.Println(err)
+    file.Close()
+    return
+  }
+  fmt.Println(outFle)
 }
