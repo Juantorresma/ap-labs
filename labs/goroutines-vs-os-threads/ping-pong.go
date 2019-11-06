@@ -1,3 +1,5 @@
+//excercise ping pong A01227885
+
 package main
 
 import (
@@ -10,9 +12,9 @@ import (
 
 func main() {
 	  var pings string;
-  	ping := make(chan int)
+  	  ping := make(chan int)
 	  pong := make(chan int)
-  	done := make(chan struct{})
+  	  done := make(chan struct{})
     flag.Parse()
     pings = flag.Arg(0)
     pingpongCount, err := strconv.Atoi(pings)
@@ -38,7 +40,6 @@ func main() {
 	go func() {
   
 		for n := range ping {
-			//fmt.Printf("Pong!\n")
 			pong <- n
 		}
 
