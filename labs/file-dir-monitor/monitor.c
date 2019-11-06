@@ -23,7 +23,7 @@ void monitor(struct inotify_event* event){
      if (event->mask & IN_MODIFY)          warnf("Se ha modificado un archivo o directorio.\n");
 }
 
-int main(char argc, char** argv){
+int main(int argc, char** argv){
     if(argc < 2){
         printf("Porfavor especifique un directorio para monitorear\n");
         return -1;
