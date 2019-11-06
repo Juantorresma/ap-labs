@@ -1,61 +1,32 @@
-int mystrlen(char *str);
-
-char *mystradd(char *origin, char *addition);
-
-int mystrfind(char *origin, char *substr);
+#include <stdio.h>
+#include "strlib.c"
 
 
-int mystrlen(char *str){
-    int n = 0;
-    
-    while(str[n] != '\0'){
-        n++;
+int
+main (int argc, char **argv)
+{
+  switch (argc)
+    {
+    case 2:
+      printf ("Initial Length      : %d\n", mystrlen (argv[1]));
+      break;
+    case 3:
+      printf ("Initial Length      : %d\n", mystrlen (argv[1]));
+      printf ("New String          : %s\n", mystradd (argv[1], argv[2]));
+      break;
+    case 4:
+      printf ("Initial Length      : %d\n", mystrlen (argv[1]));
+      printf ("New String          : %s\n", mystradd (argv[1], argv[2]));
+      if (mystrfind (argv[1], argv[3]) == 1)
+	{
+	  printf ("SubString was found : yes\n");
+	}
+      else
+	{
+	  printf ("SubString was found : no\n");
+	}
+      break;
+
     }
-   
-    return n;
-    
-}
-
-char *mystradd(char *origin, char *addition){
-
-    int lenght = mystrlen(origin);
-    
-    int n;
-    
-    for(n = 0; addition[n] != '\0'; n++){
-        origin[lenght + n] = addition[i];
-    }
-    
-    
-    origin[lenght + n] = '\0';
-    
-    return origin;
-    
-}
-
-int mystrfind(char *origin, char *substr){
-    
-    int lenght = mystrlen(origin);
-    
-    int sublenght = mystrlen(substr);
-    
-    int m = 0;
-    
-    for(int n = 0; n <= lenght; n++){
-        
-        if(origin[n] == substr[0] && m < 1){
-            m++;
-        } else if(origin[n] == substr[m]){
-            m++;
-        } else {
-            m = 0;
-        }
-        
-        if(n >= sublenght){
-            return 1;
-        }
-        
-    }
-    
-    return 0;
+  return 0;
 }
