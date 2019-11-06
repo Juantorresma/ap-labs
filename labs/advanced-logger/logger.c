@@ -35,6 +35,8 @@
 #define CYAN		6
 #define	WHITE		7
 
+int logDest = 0;
+
 //here i initialize 
 int initLogger(char *logType)
 {
