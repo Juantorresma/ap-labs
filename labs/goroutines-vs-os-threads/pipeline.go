@@ -47,7 +47,7 @@ func main() {
   }
 	
   tme := time.Since(start)
-  str := "Number of goroutines created: "+strconv.Itoa(*pipes)+"\nIt took "+tme.String() " to transmit the message"
+  str := "Number of goroutines created: "+strconv.Itoa(*pipes)+"\nIt took "+tme.String() +" to transmit the message"
   outFle, err := file.WriteString(str)
   if err != nil {
     fmt.Println(err)
