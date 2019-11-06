@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     }
 	// here is to seek then close
     int size = lseek(fp, sizeof(char), SEEK_END);
-    close(fd);
+    close(fp);
     fp = open(argv[1], O_RDONLY);
     if (fp == -1)
     {
