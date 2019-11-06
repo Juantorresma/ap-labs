@@ -2,26 +2,19 @@
 
 #include <stdio.h>
 #include "logger.h"
+
 #include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <signal.h>
-#include <sys/stat.h>
 
 //defines
 #define WHITESPACE 64
-#define EQUALS 65
-#define INVALID 66
-#define ENCODED_FILENAME "encoded.txt"
-#define DECODED_FILENAME "decoded.txt"
-
-struct stat st;
-unsigned long size;
-unsigned long byteswritten;
+#define EQUALS     65
+#define INVALID    66
 
 //here i start to put the ascii values to certain characters definded bedore
 static const unsigned char d[] = {
@@ -37,227 +30,158 @@ static const unsigned char d[] = {
     66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,66,
     66,66,66,66,66,66
 };
-int base64decode(char *in, size_t inLen, unsigned char *out, size_t * outLen) {
-	char *end = in + inLen;
-	char iter = 0;
-	uint32_t buf = 0;
-	size_t len = 0;
 
-	while (in < end) {
-		unsigned char c = d[*in++];
+size_t progress;
+off_t size;
 
-		switch (c) {
-		case WHITESPACE:
-			continue;	/* skip whitespace */
-		case INVALID:
-			return 1;	/* invalid input, return error */
-		case EQUALS:	/* pad character, end of data */
-			in = end;
-			continue;
-		default:
-			buf = buf << 6 | c;
-			iter++;	// increment the number of iteration
-			/* If the buffer is full, split it into bytes */
-			if (iter == 4) {
-				if ((len += 3) > *outLen)
-					return 1;	/* buffer overflow */
-				*(out++) = (buf >> 16) & 255;
-				*(out++) = (buf >> 8) & 255;
-				*(out++) = buf & 255;
-				buf = 0;
-				iter = 0;
+//encoder
+int base64encode(const void* data_buf, size_t dataLength, char* result, size_t resultSize)
+{
+   const char base64chars[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+   const uint8_t *data = (const uint8_t *)data_buf;
+   size_t resultIndex = 0;
+   size_t x;
+   uint32_t n = 0;
+   progress = 0;
+   int padCount = dataLength % 3;
+   uint8_t n0, n1, n2, n3;
+   for (x = 0; x < dataLength; x += 3) 
+   {
+       progress++;
+       sleep(1);
+      n = ((uint32_t)data[x]) << 16; 
+      
+      if((x+1) < dataLength)
+         n += ((uint32_t)data[x+1]) << 8;
+      
+      if((x+2) < dataLength)
+         n += data[x+2];
+      n0 = (uint8_t)(n >> 18) & 63;
+      n1 = (uint8_t)(n >> 12) & 63;
+      n2 = (uint8_t)(n >> 6) & 63;
+      n3 = (uint8_t)n & 63;
 
-			}
-		}
-	}
+      if(resultIndex >= resultSize) return 1;  
+      result[resultIndex++] = base64chars[n0];
+      if(resultIndex >= resultSize) return 1;   
+      result[resultIndex++] = base64chars[n1];
+      if((x+1) < dataLength)
+      {
+         if(resultIndex >= resultSize) return 1; 
+         result[resultIndex++] = base64chars[n2];
+      }
+      if((x+2) < dataLength)
+      {
+         if(resultIndex >= resultSize) return 1; 
+         result[resultIndex++] = base64chars[n3];
+      }
+   }
+   if (padCount > 0) 
+   { 
+      for (; padCount < 3; padCount++) 
+      { 
+         if(resultIndex >= resultSize) return 1;   
+         result[resultIndex++] = '=';
+      } 
+   }
+   if(resultIndex >= resultSize) return 1; 
+   result[resultIndex] = 0;
+   return 0;  
+}
 
-	if (iter == 3) {
-		if ((len += 2) > *outLen)
-			return 1;	/* buffer overflow */
-		*(out++) = (buf >> 10) & 255;
-		*(out++) = (buf >> 2) & 255;
-	}
+//decoder
+int base64decode (char *in, size_t inLen, unsigned char *out, size_t *outLen) { 
+    char *end = in + inLen;
+    char iter = 0;
+    uint32_t buf = 0;
+    size_t len = 0;
+    
+    while (in < end) {
+        sleep(1);
+        unsigned char c = d[*in++];
+        
+        switch (c) {
+        case WHITESPACE: continue;  
+        case INVALID:    return 1;  
+        case EQUALS:                 
+            in = end;
+            continue;
+        default:
+            buf = buf << 6 | c;
+            iter++;
+            if (iter == 4) {
+                if ((len += 3) > *outLen) return 1; /* buffer overflow */
+                *(out++) = (buf >> 16) & 255;
+                *(out++) = (buf >> 8) & 255;
+                *(out++) = buf & 255;
+                buf = 0; iter = 0;
+
+            }   
+        }
+    }
+   
+    if (iter == 3) {
+        if ((len += 2) > *outLen) return 1; /* buffer overflow */
+        *(out++) = (buf >> 10) & 255;
+        *(out++) = (buf >> 2) & 255;
+    }
     else if (iter == 2) {
-		if (++len > *outLen)
-			return 1;	/* buffer overflow */
-		*(out++) = (buf >> 4) & 255;
-	}
+        if (++len > *outLen) return 1; /* buffer overflow */
+        *(out++) = (buf >> 4) & 255;
+    }
 
-	*outLen = len;		/* modify to reflect the actual output size */
-	return 0;
+    *outLen = len; 
+    return 0;
 }
 
-int base64encode(const void *data_buf, size_t dataLength, char *result, size_t resultSize) {
-	const char base64chars[] =
-	    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	const uint8_t *data = (const uint8_t *)data_buf;
-	size_t resultIndex = 0;
-	size_t x;
-	uint32_t n = 0;
-	int padCount = dataLength % 3;
-	uint8_t n0, n1, n2, n3;
 
-	/* increment over the length of the string, three characters at a time */
-	for (x = 0; x < dataLength; x += 3) {
-		/* these three 8-bit (ASCII) characters become one 24-bit number */
-		n = ((uint32_t) data[x]) << 16;	//parenthesis needed, compiler depending on flags can do the shifting before conversion to uint32_t, resulting to 0
-
-		if ((x + 1) < dataLength)
-			n += ((uint32_t) data[x + 1]) << 8;	//parenthesis needed, compiler depending on flags can do the shifting before conversion to uint32_t, resulting to 0
-
-		if ((x + 2) < dataLength)
-			n += data[x + 2];
-
-		/* this 24-bit number gets separated into four 6-bit numbers */
-		n0 = (uint8_t) (n >> 18) & 63;
-		n1 = (uint8_t) (n >> 12) & 63;
-		n2 = (uint8_t) (n >> 6) & 63;
-		n3 = (uint8_t) n & 63;
-
-		/*
-		 * if we have one byte available, then its encoding is spread
-		 * out over two characters
-		 */
-		if (resultIndex >= resultSize)
-			return 1;	/* indicate failure: buffer too small */
-		result[resultIndex++] = base64chars[n0];
-		if (resultIndex >= resultSize)
-			return 1;	/* indicate failure: buffer too small */
-		result[resultIndex++] = base64chars[n1];
-
-		/*
-		 * if we have only two bytes available, then their encoding is
-		 * spread out over three chars
-		 */
-		if ((x + 1) < dataLength) {
-			if (resultIndex >= resultSize)
-				return 1;	/* indicate failure: buffer too small */
-			result[resultIndex++] = base64chars[n2];
-		}
-
-		/*
-		 * if we have all three bytes available, then their encoding is spread
-		 * out over four characters
-		 */
-		if ((x + 2) < dataLength) {
-			if (resultIndex >= resultSize)
-				return 1;	/* indicate failure: buffer too small */
-			result[resultIndex++] = base64chars[n3];
-		}
-	}
-
-	/*
-	 * create and add padding that is required if we did not have a multiple of 3
-	 * number of characters available
-	 */
-	if (padCount > 0) {
-		for (; padCount < 3; padCount++) {
-			if (resultIndex >= resultSize)
-				return 1;	/* indicate failure: buffer too small */
-			result[resultIndex++] = '=';
-		}
-	}
-	if (resultIndex >= resultSize)
-		return 1;	/* indicate failure: buffer too small */
-	result[resultIndex] = 0;
-	return 0;		/* indicate success */
+//open the file
+int openFile(char* filename){
+    int fd = open(filename, O_RDONLY);
+    return fd;
 }
 
-void printUsage() {
-	printf("Usage: ./base64 (--encode|--decode) file\n");
-	exit(1);
+//to get the size
+off_t getSize(int fd){
+    off_t curOffset = lseek(fd, (size_t)0, SEEK_CUR);
+    off_t size = lseek(fd, (size_t)0, SEEK_END); 
+    lseek(fd, curOffset, SEEK_SET);
+    return size;
 }
 
-static void printprogress(int sig) {
-	unsigned long progress = (byteswritten * 100) / size;
-	infof("signal: %d; progress: %ld\n", sig, progress);
+
+//handle the signals
+static void sigHandler(int sig)
+{
+    infof("Archivo procesado: %lf\n", 100.0f*progress/size);
 }
 
-int main(int argc, char **argv) {
-	if (argc != 3)
-		printUsage();
+//main function
+int main(int argc, char** argv){
+    int fd = openFile(argv[2]);
+    if(fd == -1){
+        errorf("Invalid file\n");
+        return -1;
+    }
+    size = getSize(fd);
 
-	if (signal(SIGINT, printprogress) == SIG_ERR)
-		errorf("Couldn't map signal to function!\n");
+    char* fileBuffer = (char*)malloc(sizeof(char)*size);
+    read(fd,fileBuffer,size);
+    if (signal(SIGINT, sigHandler) == SIG_ERR)
+        infof("signal");
+    
+    if(!strcmp(argv[1],"--encode")){
+        char* encodedBuffer = (char*)malloc(sizeof(char)*60000000);
+        base64encode(fileBuffer, size, encodedBuffer, 60000000);
+    }
+    else if(!strcmp(argv[1],"--decode")){
+        char* decodedBuffer = (char*)malloc(sizeof(char)*size);
+        size_t decSize = sizeof(char)*size;
+        base64decode(fileBuffer, size, decodedBuffer, &decSize);
+    }
+    else{
+        errorf("Invalid\n");
+    }
 
-	if (strcmp(argv[1], "--encode") == 0) {
-		int fdopen, fdwrite, buffreadsize, buffwritesize;
-		char *buffread, *buffwrite;
-
-		fdopen = open(argv[2], O_RDONLY);
-		if (fdopen == -1) {
-			errorf("Couldn't open %s!\n", argv[2]);
-			close(fdopen);
-			exit(1);
-		}
-		stat(argv[2], &st);
-		size = st.st_size;
-		fdwrite =
-		    open(ENCODED_FILENAME, O_WRONLY | O_CREAT, 0755);
-		if (fdwrite == -1) {
-			errorf("Cound't create new file\n");
-			close(fdwrite);
-			exit(1);
-		}
-
-		buffread = (char *)malloc(3);
-		buffwrite = (char *)malloc(4);
-		buffreadsize = 3;
-		buffwritesize = 4;
-
-		int readed;
-		while ((readed = read(fdopen, buffread, buffreadsize)) > 0) {
-			base64encode(buffread, buffreadsize, buffwrite,
-				     buffwritesize);
-			write(fdwrite, buffwrite, buffwritesize);
-			byteswritten += readed;
-			memset(buffread, 0, buffreadsize);
-		}
-		close(fdopen);
-		close(fdwrite);
-	}
-    else if (strcmp(argv[1], "--decode") == 0) {
-		int fdopen, fdwrite, buffreadsize;
-		size_t *buffwritesize;
-		char *buffread;
-		unsigned char *buffwrite;
-
-		fdopen = open(argv[2], O_RDONLY);
-		if (fdopen == -1) {
-			errorf("Couldn't open %s!\n", argv[2]);
-			close(fdopen);
-			exit(1);
-		}
-		stat(argv[2], &st);
-		size = st.st_size;
-		fdwrite =
-		    open(DECODED_FILENAME, O_WRONLY | O_CREAT, 0755);
-		if (fdwrite == -1) {
-			errorf("Cound't create new file\n");
-			close(fdwrite);
-			exit(1);
-		}
-
-		buffread = (char *)malloc(4);
-		buffwrite = (unsigned char *)malloc(3);
-		buffwritesize = (size_t *) malloc(sizeof(size_t));
-		buffreadsize = 4;
-		*buffwritesize = 3;
-
-		int readed;
-		while ((readed = read(fdopen, buffread, buffreadsize)) > 0) {
-			base64decode(buffread, buffreadsize, buffwrite,
-				     buffwritesize);
-			write(fdwrite, buffwrite, *buffwritesize);
-			byteswritten += readed;
-			memset(buffread, 0, buffreadsize);
-		}
-		close(fdopen);
-		close(fdwrite);
-	}
-    else {
-		printUsage();
-	}
-	exit(0);
-	return 0;
+    return 0;
 }
