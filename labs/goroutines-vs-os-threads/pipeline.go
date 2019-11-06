@@ -2,40 +2,39 @@
 
 package main
 
-import(
-	"time"
+import (
 	"fmt"
+	"time"
+	"os"
+	"strconv"
 )
 
-const layout = "15:04:05.000000"
-
 func main() {
-	numPipes := 1000 
-	var channels = make([]chan string, 0)
-  
-	for i := 0; i < numPipes; i++ {
-		channels = append(channels, make(chan string))
+	head := make(chan time.Time)
+	last := head
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+	for stageCount := 1; ; stageCount++ {
+		go pipeLine(last, stageCount, f)
+		head <- time.Now()
+
+		temp := last
+		last = make(chan time.Time)
+		go connectPipes(temp, last)
 	}
-  
-	go firstPipe(channels[0])
-  
-	for i := 1; i < numPipes; i++ {
-		go middlePipe(channels[i-1], channels[i])
-	}
-  
-	startTime, _ := time.Parse(layout, <-channels[numPipes-1])
-	diff := time.Since(startTime)
-	fmt.Println("Time it took for our message to pass through all channels and goroutines was:", diff)
-  
 }
 
-func firstPipe(chOut chan string) {
-	chOut <- time.Now().Format(layout)
-	close(chOut)
+func pipeLine(last chan time.Time, stageCount int, writer *os.File) {
+	startTime := <-last
+	endTime := time.Now()
+	fmt.Printf("Goroutine number: %d\t Time: %v\n", stageCount, endTime.Sub(startTime))
+	writer.WriteString(strconv.Itoa(stageCount)+","+fmt.Sprint(endTime.Sub(startTime))+"\n")
 }
 
-func middlePipe(chIn chan string, chOut chan string) {
-	t := <-chIn
-	chOut <- t
-	close(chOut)
+func connectPipes(src, dst chan time.Time) {
+	for t := range src {
+		dst <- t
+	}
 }
