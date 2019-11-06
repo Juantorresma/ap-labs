@@ -35,7 +35,6 @@ int main(char argc, char** argv){
         var3 = read(var1, buff, BUF_LEN);
         point = buff;
         event = (struct inotify_event*)point;
-        //if(event->mask & IN_CREATE ){ printf("Subdirectorio creado"); }
         for (point = buff; point < buff + var3; ) {
              event = (struct inotify_event *) point;
              monitor(event);
