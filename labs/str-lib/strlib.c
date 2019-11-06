@@ -19,7 +19,7 @@ char * mystradd (char *origin, char *addition) {
   return origin;
 }
 
-intmystrfind (char *origin, char *substr) {
+int mystrfind (char *origin, char *substr) {
   int lenght = mystrlen (origin);
   int sublenght = mystrlen (substr);
   int m = 0;
