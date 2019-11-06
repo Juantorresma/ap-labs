@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "strlib.h"
+#include "strlib.c"
 
 int mystrlen(char*);
 char* mystradd(char*, char*);
