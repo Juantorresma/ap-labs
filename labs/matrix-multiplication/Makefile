@@ -1,8 +1,8 @@
 CC       = gcc
 CFLAGS   = -Wall
 LDFLAGS  =
-OBJFILES = logger.o testLogger.o
-TARGET   = testLogger
+OBJFILES = logger.o multiplier.o
+TARGET   = multiplier
 
 all: $(TARGET)
 
