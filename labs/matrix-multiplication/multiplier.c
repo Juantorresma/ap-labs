@@ -1,9 +1,16 @@
+//Multiplier function A01227885
+//Includes
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <strings.h>
 #include "logger.h"
 
+//define matrix sizes and number of elements
+#define MATRIX_DIMENSION 2000
+#define MATRIX_NUM_ELEMENTS 4000000
+
+//functions that will be needed (Teacher)
 long * readMatrix(char *filename);
 long * getColumn(int col, long *matrix);
 long * getRow(int row, long *matrix);
@@ -12,32 +19,36 @@ int releaseLock(int lock);
 long dotProduct(long *vec1, long *vec2);
 long * multiply(long *matA, long *matB);
 int saveResultMatrix(long *result);
+
+//Extra function needed for my code
 void *threadFunc(void *arg);
 
-#define MATRIX_DIMENSION 2000
-#define MATRIX_NUM_ELEMENTS 4000000
-
+//Globar variables (Teacher)
 int NUM_BUFFERS;
 long **buffers;
 pthread_mutex_t *mutexes;
-long *resMul;
+long *result;
+
+//Global variable
 pthread_t threads[MATRIX_DIMENSION];
 
+//I make a struct to put data together
 struct vectorStruct {
-	int rowPos;
-	int colPos;
-	long *res;
+	int positionR;
+	int positionC;
+	long *multResult;
     long *matA;
 	long *matB;
 };
 
+
+//functions
 long * readMatrix(char *filename){
     
     FILE *f;
 
     if ((f = fopen(filename,"r")) == NULL){
-        errorf("Error! opening file");
-        // Program exits if the file pointer returns NULL.
+        errorf("Error: could not open file");
         exit(1);
     }
 
@@ -57,7 +68,7 @@ long * readMatrix(char *filename){
 long * getColumn(int col, long *matrix){
 
     if (col < 0 || col > MATRIX_DIMENSION) {
-		warnf("col is an invalid number, must be from 0 to 2000\n");
+		warnf("The colum has not a valid number, it must be positive and below 2000\n");
 		exit(1);
 	}
 
@@ -75,7 +86,7 @@ long * getColumn(int col, long *matrix){
 long * getRow(int row, long *matrix){
 
     if (row < 0 || row > MATRIX_DIMENSION) {
-		warnf("row is an invalid number, must be from 0 to 2000\n");
+		warnf("The row has not a valid number, it must be positive and below 2000\n");
 		exit(1);
 	}
 
@@ -112,7 +123,7 @@ long dotProduct(long *vec1, long *vec2){
 
 long * multiply(long *matA, long *matB){
 
-    long *resMul = (long *)malloc(MATRIX_NUM_ELEMENTS * sizeof(long));
+    long *result = (long *)malloc(MATRIX_NUM_ELEMENTS * sizeof(long));
 	
     int i, 
         j;
@@ -124,13 +135,12 @@ long * multiply(long *matA, long *matB){
 
 			vector->matA = matA;
 			vector->matB = matB;
-			vector->rowPos = i + 1;
-			vector->colPos = j + 1;
-			vector->res = resMul;
+			vector->positionR = i + 1;
+			vector->positionC = j + 1;
+			vector->multResult = result;
 
 			pthread_create(&threads[j], NULL , threadFunc , (void *)vector);
 		}
-//		printf("%d\n",i);
 
 		for ( j = 0; j < MATRIX_DIMENSION; j++)
 			pthread_join(threads[j], NULL);
@@ -138,14 +148,14 @@ long * multiply(long *matA, long *matB){
 		fflush(stdout);
 	}
 
-	return resMul;
+	return result;
 }
 
 int saveResultMatrix(long *result){
 
     FILE *f = fopen("result.dat", "w");
 	if (f == NULL) {
-		errorf("error writing 'result.dat' file\n");
+		errorf("Could not write the file 'result.dat' \n");
 		return -1;
 	}
 
@@ -166,11 +176,11 @@ void *threadFunc(void *arg)
 	while ((lockRow = getLock()) == -1);
 	while ((lockCol = getLock()) == -1);
 
-	buffers[lockRow] = getRow(currVec->rowPos, currVec->matA);
-	buffers[lockCol] = getColumn(currVec->colPos, currVec->matB);
+	buffers[lockRow] = getRow(currVec->positionR, currVec->matA);
+	buffers[lockCol] = getColumn(currVec->positionC, currVec->matB);
 	
-	i = ((((currVec->rowPos - 1) * MATRIX_DIMENSION) + currVec->colPos) - 1);
-	currVec->res[i] = dotProduct(buffers[lockRow], buffers[lockCol]);
+	i = ((((currVec->positionR - 1) * MATRIX_DIMENSION) + currVec->positionC) - 1);
+	currVec->multResult[i] = dotProduct(buffers[lockRow], buffers[lockCol]);
 
 	free(buffers[lockRow]);
 	free(buffers[lockCol]);
@@ -182,25 +192,27 @@ void *threadFunc(void *arg)
 	return NULL;
 }
 
+
+//Our main
 int main(int argc, char **argv){
     
 	if(argc != 3 || strcmp("-n",argv[1]) != 0){
-		errorf("Invalid format [./multiplier -n NUM_BUFFERS] expected  \n");
+		errorf("Not a valid format expected: [./multiplier -n NUM_BUFFERS]  \n");
 		exit(EXIT_FAILURE);
 	}
 
 	NUM_BUFFERS = strtol(argv[2], NULL, 10);
 
 	if(NUM_BUFFERS < 1){
-		errorf("Invalid number of buffers : %d , must be greater than 0\n",NUM_BUFFERS);
+		errorf("Not a valid number of buffers: the current number is %d , it should be greater than 0\n",NUM_BUFFERS);
 		exit(EXIT_FAILURE);
 	}
 
 	if(NUM_BUFFERS < 12){
-		warnf("[ %d ] number of buffers might cause errors in execution time, it is recomended to use (minimum) [ 12 ] buffers\n",NUM_BUFFERS);
+		warnf("There are [ %d ]  buffers, this might cause errors in execution time, it is recomended to use at least [ 12 ] buffers\n",NUM_BUFFERS);
 	}	
 
-	infof("Program start running with [ %d ] number of buffers\n",NUM_BUFFERS);
+	infof("The solution has started running with %d buffers\n",NUM_BUFFERS);
 
 	buffers = (long **)malloc(NUM_BUFFERS * sizeof(long *));
 	mutexes = (pthread_mutex_t *) malloc(NUM_BUFFERS * sizeof(pthread_mutex_t));
@@ -210,27 +222,18 @@ int main(int argc, char **argv){
 		mutexes[i] = mutex;
 		pthread_mutex_init(&mutexes[i], NULL);
 	}
+	long *matrixA, *matrixB;
+	matrixA = readMatrix("matA.dat");
+	matrixB = readMatrix("matB.dat");
+	result= multiply(matrixA, matrixB);
+	saveResultMatrix(result);
+	infof("The resulting matrix was saved in 'result.dat' file\n");
 
-	infof("Threads initialized correctly \n");
-
-	long *mA, *mB;
-	mA = readMatrix("matA.dat");
-	mB = readMatrix("matB.dat");
-
-	infof("Matrices read correctly\n");
-
-	infof("Computing multiplication\n");
-	resMul= multiply(mA, mB);
-	infof("Multiplication succesfully computed\n");
-
-	saveResultMatrix(resMul);
-	infof("Matrix saved in 'result.dat' file\n");
-
-	free(mA);
-	free(mB);
+	free(matrixA);
+	free(matrixB);
 	free(buffers);
 	free(mutexes);
-	free(resMul);
+	free(result);
 
     return 0;
 }
