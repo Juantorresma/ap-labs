@@ -8,7 +8,7 @@ import (
 	)
 
 func main() {
-	if len(os.Args)==2{
+	if len(os.Args)==3{
 		if fN,err := strconv.Atoi(os.Args[1]); err!=nil{
 			fmt.Println(err)
 		} else{
@@ -16,8 +16,8 @@ func main() {
 		}
 
 	} else{
-		fmt.Println("Specify the food quantity")
-		fmt.Println("./main ##")
+		fmt.Println("Specify the food quantity and the enemy quantity")
+		fmt.Println("./main #F #E")
 	}
 
 }
